@@ -20,7 +20,7 @@ do
       ;;
     -v | --version)
       echo "Version: vendor_google_chromeos-x86 2.1"
-      echo "Updated: 05.27.2021"
+      echo "Updated: 01.15.2026"
       ;;
 	
   # ...
@@ -62,16 +62,16 @@ umask 022
 # Instructions for updating:
 # Start by grabbing the latest recovery available
 # Example: https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_13816.82.0_hatch_recovery_stable-channel_mp-v6.bin.zip
-# Then once downloaded, we run 'sha1sum chromeos_13816.82.0_hatch_recovery_stable-channel_mp-v6.bin.zip' 
+# Then once downloaded, we run 'sha1sum chromeos_16463.72.0_hatch_recovery_stable-channel_HatchMPKeys-v12.bin.zip' 
 # and it will generate our SHA1 sum. Add just the hash from that to the CHROMEOS_SHA1 string
 # Then we split the name into the separate parts for CHROMEOS_VERSION & CHROMEOS_RECOVERY
 
-CHROMEOS_VERSION="13816.82.0_hatch"
-CHROMEOS_RECOVERY="chromeos_${CHROMEOS_VERSION}_recovery_stable-channel_mp-v6"
+CHROMEOS_VERSION="16463.72.0_hatch"
+CHROMEOS_RECOVERY="chromeos_${CHROMEOS_VERSION}_recovery_stable-channel_HatchMPKeys-v12"
 
 CHROMEOS_FILENAME="$CHROMEOS_RECOVERY.bin.zip"
 CHROMEOS_URL="https://dl.google.com/dl/edgedl/chromeos/recovery/$CHROMEOS_FILENAME"
-CHROMEOS_SHA1="30497765b4fcb07e57fbe01049274fc0597a044d $CHROMEOS_FILENAME"
+CHROMEOS_SHA1="ecb8807286bdd98150aacd16c1174604a34a14e4 $CHROMEOS_FILENAME"
 
 CHROMEOS_FILE="$PWD/$CHROMEOS_FILENAME"
 TARGET_DIR="$PWD/proprietary"
@@ -146,12 +146,10 @@ RSYNC="rsync -rt --files-from=-"
 
 # Widevine DRM
 $RSYNC . "$TARGET_DIR/widevine" <<EOF
-vendor/bin/hw/android.hardware.drm@1.3-service.widevine
-vendor/etc/init/android.hardware.drm@1.3-service.widevine.rc
-vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.3-service.widevine.xml
-vendor/lib/libwvhidl.so
-vendor/lib/mediadrm/libwvdrmengine.so
-vendor/lib64/mediadrm/libwvdrmengine.so
+vendor/bin/hw/android.hardware.drm-service-lazy.widevine
+vendor/etc/init/android.hardware.drm-service-lazy.widevine.rc
+vendor/etc/vintf/manifest/manifest_android.hardware.drm-service.widevine.xml
+vendor/lib64/libwvaidl.so
 EOF
 
 # Copy Android.bp for android.hardware.drm@1.3-service.widevine
@@ -159,30 +157,23 @@ EOF
 
 cat > "$TARGET_DIR/widevine/Android.bp" <<EOF
 cc_prebuilt_binary {
-    name: "android.hardware.drm@1.3-service.widevine",
-    srcs: ["vendor/bin/hw/android.hardware.drm@1.3-service.widevine"],
+    name: "android.hardware.drm-service-lazy.widevine",
+    srcs: ["vendor/bin/hw/android.hardware.drm-service-lazy.widevine"],
     vendor: true,
     relative_install_path: "hw",
-    vintf_fragments: ["vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.3-service.widevine.xml"],
-    init_rc: ["vendor/etc/init/android.hardware.drm@1.3-service.widevine.rc"],
+    vintf_fragments: ["vendor/etc/vintf/manifest/manifest_android.hardware.drm-service.widevine.xml"],
+    init_rc: ["vendor/etc/init/android.hardware.drm-service-lazy.widevine.rc"],
     required: [
-        "libwvhidl",
-        "libwvdrmengine",
+        "libwvaidl",
     ],
     check_elf_files: false,
 }
 cc_prebuilt_library_shared {
-    name: "libwvhidl",
-    srcs: ["vendor/lib/libwvhidl.so"],
+    name: "libwvaidl",
+    srcs: ["vendor/lib64/libwvaidl.so"],
     vendor: true,
     check_elf_files: false,
 }
-cc_prebuilt_library_shared {
-    name: "libwvdrmengine",
-    srcs: ["vendor/lib/mediadrm/libwvdrmengine.so"],
-    vendor: true,
-    relative_install_path: "mediadrm",
-    check_elf_files: false,
 }
 
 EOF
